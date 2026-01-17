@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>PhishGuard</h1>
+  <img src="Images/banner.png" alt="PhishGuard Banner" width="800"/>
   
   <p><strong>AI-powered email phishing detection using a private, local LLM.</strong></p>
   <p><strong>No data leaves your device.</strong></p>
