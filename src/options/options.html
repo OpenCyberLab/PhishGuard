@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>PhishGuard Settings</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ PhishGuard Settings</h1>
+            <p class="subtitle">Configure your local LLM server</p>
+        </header>
+
+        <main>
+            <section class="settings-section">
+                <div class="section-header">
+                    <h2>LLM Server Configuration</h2>
+                </div>
+
+                <div class="form-group">
+                    <label for="serverType">Server Type</label>
+                    <select id="serverType" class="form-control">
+                        <option value="lm_studio">LM Studio (OpenAI-compatible)</option>
+                        <option value="ollama">Ollama</option>
+                        <option value="llama_cpp">llama.cpp Server</option>
+                        <option value="localai">LocalAI</option>
+                        <option value="vllm">vLLM</option>
+                        <option value="custom">Custom OpenAI-compatible</option>
+                    </select>
+                    <small class="form-text">Select your local LLM server type</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="apiUrl">API Base URL</label>
+                    <input type="text" id="apiUrl" class="form-control" placeholder="http://localhost:1234">
+                    <small class="form-text">Base URL for your LLM server (without /v1/chat/completions)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="selectedModel">Model Name</label>
+                    <div class="input-group">
+                        <input type="text" id="selectedModel" class="form-control" placeholder="llama-3-8b-instruct">
+                        <button class="btn btn-secondary" id="listModels">List Available Models</button>
+                    </div>
+                    <small class="form-text">The model to use for phishing detection</small>
+                </div>
+
+                <div id="modelList" class="model-list" style="display: none;">
+                    <!-- Available models will be listed here -->
+                </div>
+
+                <div class="form-group">
+                    <label for="apiFormat">API Format</label>
+                    <select id="apiFormat" class="form-control">
+                        <option value="openai">OpenAI-compatible</option>
+                        <option value="ollama">Ollama (Custom)</option>
+                    </select>
+                    <small class="form-text">API format used by your server</small>
+                </div>
+            </section>
+
+            <section class="settings-section">
+                <h2>Connection Test</h2>
+                <div class="test-panel">
+                    <button class="btn btn-primary" id="testConnection">Test Connection</button>
+                    <div id="testResult" class="test-result"></div>
+                </div>
+            </section>
+
+            <section class="settings-section">
+                <h2>Quick Start Guide</h2>
+                <div class="guide-grid">
+                    <div class="guide-card">
+                        <h3>Need Help?</h3>
+                        <p>Check our documentation for installation guides, troubleshooting tips, and LLM server setup instructions.</p>
+                        <button class="btn btn-secondary" id="openDocsBtn">View Documentation</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="button-group">
+                <button class="btn btn-secondary" id="resetBtn">Reset to Defaults</button>
+                <div class="right-buttons">
+                    <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    <button class="btn btn-primary" id="saveBtn">Save Settings</button>
+                </div>
+            </div>
+            <div class="status-message" id="statusMessage"></div>
+        </footer>
+    </div>
+
+    <script src="options.js" type="module"></script>
+</body>
+</html>

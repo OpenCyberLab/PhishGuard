@@ -1,0 +1,51 @@
+{
+  "manifest_version": 2,
+  "name": "PhishGuard",
+  "description": "AI-powered email phishing detection using a private, local LLM. No data leaves your device.",
+  "version": "1.0.0",
+  "author": "PhishGuard Team",
+  "homepage_url": "https://github.com/OpenCyberLab/PhishGuard",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "phishguard@phishguard.local",
+      "strict_min_version": "115.0"
+    }
+  },
+
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "64": "icons/icon-64.png"
+  },
+
+  "permissions": [
+    "messagesRead",
+    "accountsRead", 
+    "storage",
+    "tabs",
+    "activeTab",
+    "http://localhost/*",
+    "https://localhost/*",
+    "messagesModify"
+  ],
+
+  "background": {
+    "scripts": ["src/background/background.js"],
+    "type": "module"
+  },
+
+  "message_display_action": {
+    "default_title": "Analyze with PhishGuard",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+
+  "options_ui": {
+    "page": "src/options/options.html",
+    "open_in_tab": true
+  }
+}

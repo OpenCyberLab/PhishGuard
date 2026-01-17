@@ -1,0 +1,20 @@
+{
+  "name": "thunderbird-phishguard",
+  "version": "1.0.0",
+  "description": "Thunderbird extension for AI-powered email phishing detection using a private, local LLM",
+  "private": true,
+  "scripts": {
+    "build": "web-ext build --source-dir=. --artifacts-dir=dist --overwrite-dest",
+    "dev": "web-ext run --source-dir=. --target=thunderbird",
+    "lint": "web-ext lint --source-dir=."
+  },
+  "devDependencies": {
+    "web-ext": "^7.11.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AjiteshShukla/PhishGuard"
+  },
+  "author": "PhishGuard Team",
+  "license": "MIT"
+}
