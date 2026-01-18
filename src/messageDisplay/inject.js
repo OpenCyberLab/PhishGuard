@@ -12,65 +12,34 @@
   panel.innerHTML = `
     <div class="pg-header">
       <div class="pg-brand">
-        <svg viewBox="0 0 300 300" fill="none">
-          <!-- PhishGuard logo - Full color version for light background -->
+        <svg viewBox="0 50 155 160" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="panelShield" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
-            </linearGradient>
+            <radialGradient id="shieldGrad" cx="77" cy="130" r="80" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#37a1ee"/>
+              <stop offset="1" stop-color="#2418c7"/>
+            </radialGradient>
           </defs>
-          <!-- Shield with gradient -->
-          <path d="M 150 30 
-                   L 240 70 
-                   L 240 160 
-                   Q 240 225 150 270 
-                   Q 60 225 60 160 
-                   L 60 70 
-                   Z" 
-                fill="url(#panelShield)" 
-                opacity="0.95"/>
-          <!-- Inner shield detail -->
-          <path d="M 150 45 
-                   L 230 80 
-                   L 230 160 
-                   Q 230 218 150 258 
-                   Q 70 218 70 160 
-                   L 70 80 
-                   Z" 
-                fill="none" 
-                stroke="rgba(255,255,255,0.4)"
-                stroke-width="2"/>
-          <!-- Fishing hook (red) -->
-          <path d="M 205 100 
-                   Q 205 88 213 88 
-                   Q 221 88 221 100 
-                   L 221 125 
-                   Q 221 133 216 133 
-                   Q 213 133 212 131 
-                   L 215 138" 
-                fill="none" 
-                stroke="#ef4444" 
-                stroke-width="5" 
-                stroke-linecap="round"/>
-          <!-- Fishing line -->
-          <line x1="213" y1="88" x2="213" y2="55" 
-                stroke="#ef4444" 
-                stroke-width="2" 
-                opacity="0.6"
-                stroke-dasharray="4,4"/>
-          <!-- Block line (white) -->
-          <line x1="195" y1="90" x2="230" y2="145" 
-                stroke="#ffffff" 
-                stroke-width="11" 
-                stroke-linecap="round"/>
-          <!-- Check mark (white) -->
-          <path d="M 100 160 L 130 190 L 185 120" 
-                fill="none" 
-                stroke="#ffffff" 
-                stroke-width="13" 
-                stroke-linecap="round" 
-                stroke-linejoin="round"/>
+          <!-- Shield fill -->
+          <path d="M8.5 75.3c24-2.9 47-7.9 68.3-15.5 22 7 44.3 13 68.3 16.2 8.9 79.9-26.4 109.5-68.3 131.4C18.6 177.5 1.6 137 8.5 75.3z" fill="url(#shieldGrad)" opacity="0.98"/>
+          <!-- Shield white border -->
+          <path d="M15 80.8c21.7-2.6 42.5-7.2 61.8-14 19.9 6.4 40.2 12 61.9 14.9 8 72-24.3 98.6-61.9 118.5-52.7-27-68-63.3-61.8-119.4z" fill="none" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Email envelope body -->
+          <rect x="52" y="120" width="49" height="34" rx="6" fill="#f7da10"/>
+          <!-- Email envelope flap triangle -->
+          <path d="M84.3 120.5h10.2l-5.1 5.5-12 3.8z" fill="#f7da10"/>
+          <!-- Email envelope lines -->
+          <g stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" fill="none">
+            <path d="M64.6 128.8l11.5 8.7 11.4-8.6"/>
+            <path d="M64.5 142.9l9.3-7 2.2 1.7 2.2-1.6 9.4 7.1"/>
+          </g>
+          <!-- Fishing hook -->
+          <path d="M91.4 109.8c-.1 0-.3.1-.3.2-.5.9.9 2.4 1.1 3 .9 2.4 3.1 8.8 3.2 12.6.1 2-.2 4.4-1.2 5.8-1.6 1.7-4.6 2.4-6.8 1.5-1.4-.6-2.1-2.1-2.6-3.6.4-.2 1.4.7 1.9.7l-2.3-1.8v-.1c-.5-1.4-.5-4.5-.5-4.5s-.7 3.3-.3 4.9c.6 2.3 1.5 5.2 3.7 6 2.7 1 6.3-.2 8.2-2.3 1.7-1.8 1.6-4.7 1.5-7.1-.2-3.8-2.7-10.2-3.7-12.5-.2-.5-.2-2.3-1.1-2.8-.2-.1-.5-.1-.7 0z" fill="#241f1c"/>
+          <!-- Hook line (red) -->
+          <path d="M92.3 82.2v31.1l1.6.5V82.2z" fill="#de0000"/>
+          <!-- Red circle (no phishing) -->
+          <circle cx="78.5" cy="126.2" r="47.3" fill="none" stroke="#ff0000" stroke-width="7.2" stroke-linecap="round"/>
+          <!-- Red diagonal slash -->
+          <path d="M44.2 95l66.9 63.1" fill="none" stroke="#ff0000" stroke-width="7.2" stroke-linecap="round"/>
         </svg>
         <span class="pg-brand-text">PhishGuard</span>
         <div class="pg-status loading" id="pgStatus"></div>
@@ -286,10 +255,35 @@
     setAuth('pgDkim', auth.dkim?.status);
     setAuth('pgDmarc', auth.dmarc?.status);
 
-    document.getElementById('pgReasons').innerHTML = 
-      (result.reasons || []).slice(0, 4).map(r => `<li>${esc(r)}</li>`).join('') || '<li>No issues</li>';
-    document.getElementById('pgActions').innerHTML = 
-      (result.next_steps || []).slice(0, 3).map(a => `<li>${esc(a)}</li>`).join('') || '<li>None</li>';
+    const reasonsEl = document.getElementById('pgReasons');
+    reasonsEl.textContent = '';
+    const reasons = (result.reasons || []).slice(0, 4);
+    if (reasons.length === 0) {
+      const li = document.createElement('li');
+      li.textContent = 'No issues';
+      reasonsEl.appendChild(li);
+    } else {
+      reasons.forEach(r => {
+        const li = document.createElement('li');
+        li.textContent = r;
+        reasonsEl.appendChild(li);
+      });
+    }
+
+    const actionsEl = document.getElementById('pgActions');
+    actionsEl.textContent = '';
+    const actions = (result.next_steps || []).slice(0, 3);
+    if (actions.length === 0) {
+      const li = document.createElement('li');
+      li.textContent = 'None';
+      actionsEl.appendChild(li);
+    } else {
+      actions.forEach(a => {
+        const li = document.createElement('li');
+        li.textContent = a;
+        actionsEl.appendChild(li);
+      });
+    }
 
     idleEl.style.display = 'none';
     loadingEl.style.display = 'none';
@@ -304,12 +298,6 @@
     s = (s || 'unknown').toLowerCase();
     el.textContent = s.toUpperCase();
     el.className = s === 'pass' ? 'pass' : s === 'fail' ? 'fail' : 'unknown';
-  }
-
-  function esc(t) {
-    const d = document.createElement('div');
-    d.textContent = t || '';
-    return d.innerHTML;
   }
 
   function process(state) {
