@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard Documentation</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --heading: #0f172a;
+            --link: #2563eb;
+            --code-bg: #e2e8f0;
+            --border: #cbd5e1;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f172a;
+                --text: #e2e8f0;
+                --heading: #f8fafc;
+                --link: #60a5fa;
+                --code-bg: #1e293b;
+                --border: #334155;
+            }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 { color: var(--heading); margin: 1.5rem 0 1rem; }
+        h1 { font-size: 2rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+        h2 { font-size: 1.5rem; margin-top: 2rem; }
+        h3 { font-size: 1.2rem; }
+        p { margin: 0.75rem 0; }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        ul, ol { margin: 0.75rem 0 0.75rem 1.5rem; }
+        li { margin: 0.5rem 0; }
+        code {
+            background: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        pre code { background: none; padding: 0; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th { background: var(--code-bg); }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-success { background: var(--success); color: white; }
+        .badge-warning { background: var(--warning); color: white; }
+        .badge-danger { background: var(--danger); color: white; }
+        .header {
+            text-align: center;
+            padding: 2rem 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        .header h1 { border: none; }
+        .header-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+        }
+        .section { margin: 2rem 0; }
+        .tip {
+            background: var(--code-bg);
+            border-left: 4px solid var(--link);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .warning {
+            background: #fef3c7;
+            border-left: 4px solid var(--warning);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        @media (prefers-color-scheme: dark) {
+            .warning { background: #422006; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <svg class="header-logo" viewBox="0 50 155 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="shieldGrad" cx="77" cy="130" r="80" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#37a1ee"/>
+                    <stop offset="1" stop-color="#2418c7"/>
+                </radialGradient>
+            </defs>
+            <path d="M8.5 75.3c24-2.9 47-7.9 68.3-15.5 22 7 44.3 13 68.3 16.2 8.9 79.9-26.4 109.5-68.3 131.4C18.6 177.5 1.6 137 8.5 75.3z" fill="url(#shieldGrad)" opacity="0.98"/>
+            <path d="M15 80.8c21.7-2.6 42.5-7.2 61.8-14 19.9 6.4 40.2 12 61.9 14.9 8 72-24.3 98.6-61.9 118.5-52.7-27-68-63.3-61.8-119.4z" fill="none" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="52" y="120" width="49" height="34" rx="6" fill="#f7da10"/>
+            <path d="M84.3 120.5h10.2l-5.1 5.5-12 3.8z" fill="#f7da10"/>
+            <g stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" fill="none">
+                <path d="M64.6 128.8l11.5 8.7 11.4-8.6"/>
+                <path d="M64.5 142.9l9.3-7 2.2 1.7 2.2-1.6 9.4 7.1"/>
+            </g>
+            <path d="M91.4 109.8c-.1 0-.3.1-.3.2-.5.9.9 2.4 1.1 3 .9 2.4 3.1 8.8 3.2 12.6.1 2-.2 4.4-1.2 5.8-1.6 1.7-4.6 2.4-6.8 1.5-1.4-.6-2.1-2.1-2.6-3.6.4-.2 1.4.7 1.9.7l-2.3-1.8v-.1c-.5-1.4-.5-4.5-.5-4.5s-.7 3.3-.3 4.9c.6 2.3 1.5 5.2 3.7 6 2.7 1 6.3-.2 8.2-2.3 1.7-1.8 1.6-4.7 1.5-7.1-.2-3.8-2.7-10.2-3.7-12.5-.2-.5-.2-2.3-1.1-2.8-.2-.1-.5-.1-.7 0z" fill="#241f1c"/>
+            <path d="M92.3 82.2v31.1l1.6.5V82.2z" fill="#de0000"/>
+            <circle cx="78.5" cy="126.2" r="47.3" fill="none" stroke="#ff0000" stroke-width="7.2" stroke-linecap="round"/>
+            <path d="M44.2 95l66.9 63.1" fill="none" stroke="#ff0000" stroke-width="7.2" stroke-linecap="round"/>
+        </svg>
+        <h1>PhishGuard Documentation</h1>
+        <p><strong>AI-powered email phishing detection using a private, local LLM.</strong></p>
+        <p>No data leaves your device.</p>
+    </div>
+
+    <div class="section">
+        <h2>Features</h2>
+        <ul>
+            <li>Analyzes emails for phishing indicators using a local LLM</li>
+            <li>100% private - all analysis happens on your machine</li>
+            <li>Clear verdict (Legitimate/Malicious) with confidence score</li>
+            <li>Email authentication analysis (SPF, DKIM, DMARC)</li>
+            <li>Detailed analysis reasons and recommended actions</li>
+            <li>Auto-scan capability when opening emails</li>
+            <li>Dark mode support</li>
+            <li>Multi-LLM Support - Works with LM Studio, Ollama, llama.cpp, and more</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Quick Start</h2>
+        
+        <h3>Step 1: Install a Local LLM Server</h3>
+        <p>Choose one of the following options:</p>
+        
+        <h4>LM Studio (Recommended - GUI-based)</h4>
+        <ol>
+            <li>Download from: <a href="https://lmstudio.ai/" target="_blank">https://lmstudio.ai/</a></li>
+            <li>Install and load a model (recommended: Llama 3 8B, Mistral 7B)</li>
+            <li>Click "Start Server" (default port: 1234)</li>
+        </ol>
+        
+        <h4>Ollama (Lightweight - Terminal-based)</h4>
+        <pre><code># macOS/Linux
+curl -fsSL https://ollama.com/install.sh | sh
+ollama serve
+ollama pull llama3:8b</code></pre>
+        
+        <h4>Docker (All-in-one)</h4>
+        <pre><code>docker run -d -p 11434:11434 --name ollama ollama/ollama
+docker exec ollama ollama pull llama3:8b</code></pre>
+
+        <h3>Step 2: Configure PhishGuard</h3>
+        <ol>
+            <li>Go to <strong>Tools</strong> &gt; <strong>Add-ons and Themes</strong></li>
+            <li>Find PhishGuard and click <strong>Options</strong></li>
+            <li>Select your server type (LM Studio, Ollama, etc.)</li>
+            <li>Click <strong>Test Connection</strong> to verify</li>
+            <li>Click <strong>Save Settings</strong></li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>Usage</h2>
+        <ol>
+            <li><strong>Start your local LLM server</strong> (LM Studio, Ollama, etc.)</li>
+            <li><strong>Open any email</strong> in Thunderbird</li>
+            <li><strong>View the analysis</strong> - PhishGuard automatically scans emails and shows:
+                <ul>
+                    <li><strong>Verdict</strong>: Legitimate or Malicious</li>
+                    <li><strong>Confidence</strong>: 0-100%</li>
+                    <li><strong>Authentication</strong>: SPF, DKIM, DMARC status</li>
+                    <li><strong>Analysis</strong>: Reasons for the verdict</li>
+                    <li><strong>Actions</strong>: Recommended next steps</li>
+                </ul>
+            </li>
+        </ol>
+        
+        <div class="tip">
+            <strong>Tip:</strong> You can toggle auto-scan on/off using the switch in the PhishGuard panel.
+            When off, click "Scan Email" to manually analyze.
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Supported LLM Servers</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Server</th>
+                    <th>Default Port</th>
+                    <th>API Format</th>
+                    <th>Website</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>LM Studio</strong></td>
+                    <td>1234</td>
+                    <td>OpenAI-compatible</td>
+                    <td><a href="https://lmstudio.ai/" target="_blank">lmstudio.ai</a></td>
+                </tr>
+                <tr>
+                    <td><strong>Ollama</strong></td>
+                    <td>11434</td>
+                    <td>Ollama API</td>
+                    <td><a href="https://ollama.com/" target="_blank">ollama.com</a></td>
+                </tr>
+                <tr>
+                    <td><strong>llama.cpp</strong></td>
+                    <td>8080</td>
+                    <td>OpenAI-compatible</td>
+                    <td><a href="https://github.com/ggerganov/llama.cpp" target="_blank">GitHub</a></td>
+                </tr>
+                <tr>
+                    <td><strong>LocalAI</strong></td>
+                    <td>8080</td>
+                    <td>OpenAI-compatible</td>
+                    <td><a href="https://localai.io/" target="_blank">localai.io</a></td>
+                </tr>
+                <tr>
+                    <td><strong>vLLM</strong></td>
+                    <td>8000</td>
+                    <td>OpenAI-compatible</td>
+                    <td><a href="https://vllm.ai/" target="_blank">vllm.ai</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Recommended Models</h2>
+        
+        <h3>For Best Accuracy</h3>
+        <ul>
+            <li>Llama 3 8B or 70B</li>
+            <li>Mistral 7B-Instruct</li>
+            <li>Qwen 2.5 7B</li>
+        </ul>
+        
+        <h3>For Faster Performance</h3>
+        <ul>
+            <li>Phi-3 Mini (3.8B)</li>
+            <li>TinyLlama (1.1B)</li>
+        </ul>
+        
+        <h3>System Requirements</h3>
+        <ul>
+            <li>Model must support JSON output</li>
+            <li>Recommended: 8GB+ RAM for 7-8B models</li>
+            <li>Minimum: 4GB RAM for smaller models</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Understanding Email Authentication</h2>
+        <p>PhishGuard analyzes email authentication headers to help detect spoofed emails:</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Check</th>
+                    <th>What it Does</th>
+                    <th>Risk if Failed</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>SPF</strong></td>
+                    <td>Validates sender IP is authorized</td>
+                    <td>High - sender may be spoofed</td>
+                </tr>
+                <tr>
+                    <td><strong>DKIM</strong></td>
+                    <td>Cryptographic signature verification</td>
+                    <td>High - email may be tampered</td>
+                </tr>
+                <tr>
+                    <td><strong>DMARC</strong></td>
+                    <td>Domain-based policy enforcement</td>
+                    <td>Very High - likely spoofing</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="tip">
+            <strong>Interpretation:</strong>
+            <ul>
+                <li><span class="badge badge-success">PASS</span> - Authentication successful</li>
+                <li><span class="badge badge-danger">FAIL</span> - Authentication failed (higher risk)</li>
+                <li><span class="badge badge-warning">UNKNOWN</span> - No authentication data available</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Troubleshooting</h2>
+        
+        <h3>"Cannot connect to LLM server"</h3>
+        <ul>
+            <li>Ensure your LLM server is running</li>
+            <li>Verify the correct port in PhishGuard Options</li>
+            <li>Click "Open Settings" in the error panel to configure</li>
+            <li>Check that no firewall is blocking localhost connections</li>
+        </ul>
+        
+        <h3>"No models found"</h3>
+        <ul>
+            <li><strong>LM Studio:</strong> Load a model in the GUI first, then start the server</li>
+            <li><strong>Ollama:</strong> Run <code>ollama pull llama3:8b</code> to download a model</li>
+        </ul>
+        
+        <h3>"LLM response does not match expected schema"</h3>
+        <ul>
+            <li>Try a larger/more capable model</li>
+            <li>Smaller models (&lt; 3B parameters) may struggle with JSON output</li>
+            <li>Recommended: Use Llama 3 8B or Mistral 7B</li>
+        </ul>
+        
+        <h3>Extension not appearing</h3>
+        <ul>
+            <li>Make sure you're using Thunderbird 115.0 or higher</li>
+            <li>Try disabling and re-enabling the extension</li>
+            <li>Restart Thunderbird</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Privacy</h2>
+        <ul>
+            <li><strong>All analysis happens locally</strong> on your machine</li>
+            <li>No email content is sent to external servers</li>
+            <li>No tracking or telemetry</li>
+            <li>Your emails stay private</li>
+        </ul>
+        
+        <div class="warning">
+            <strong>Note:</strong> PhishGuard uses AI analysis which may not be 100% accurate. 
+            Use the results as a guide, not definitive proof. When in doubt, report suspicious 
+            emails to your IT department.
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Links</h2>
+        <ul>
+            <li><a href="https://addons.thunderbird.net/en-US/thunderbird/addon/phishguard/" target="_blank">Thunderbird Add-ons Page</a></li>
+        </ul>
+    </div>
+
+    <div class="section" style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+        <p><strong>PhishGuard</strong> by OpenCyberLab</p>
+        <p>AI-powered phishing detection with complete privacy</p>
+    </div>
+</body>
+</html>

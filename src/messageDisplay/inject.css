@@ -351,10 +351,20 @@
   color: #fff;
 }
 
+.pg-badge.warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  animation: pg-pulse-warning 2s infinite;
+}
+
 .pg-badge.danger {
   background: linear-gradient(135deg, #ef4444, #dc2626);
   color: #fff;
   animation: pg-pulse 2s infinite;
+}
+
+@keyframes pg-pulse-warning {
+  50% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); }
 }
 
 @keyframes pg-pulse {

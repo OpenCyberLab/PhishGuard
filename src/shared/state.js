@@ -5,8 +5,12 @@
 
 /**
  * Valid verdict values
+ * - legitimate: Email appears safe
+ * - suspicious: Email has some concerning elements but not definitively malicious
+ * - malicious: Email shows clear signs of phishing/malicious intent
+ * - unknown: Unable to determine (error state)
  */
-export const VERDICTS = ['legitimate', 'malicious', 'unknown'];
+export const VERDICTS = ['legitimate', 'suspicious', 'malicious', 'unknown'];
 
 /**
  * Check if a value is a valid verdict
@@ -41,7 +45,8 @@ export function isValidLlmResponse(obj) {
 
 // Session cache for scan results
 const scanCache = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes (increased from 5)
+const MAX_CACHE_SIZE = 50; // Maximum number of cached results
 
 /**
  * Get cached scan result
@@ -67,6 +72,24 @@ export function getCachedScan(messageId) {
  * @param {object} result 
  */
 export function setCachedScan(messageId, result) {
+  // Enforce cache size limit - remove oldest entries if needed
+  if (scanCache.size >= MAX_CACHE_SIZE) {
+    // Find and remove the oldest entry
+    let oldestKey = null;
+    let oldestTime = Infinity;
+    
+    for (const [key, value] of scanCache.entries()) {
+      if (value.timestamp < oldestTime) {
+        oldestTime = value.timestamp;
+        oldestKey = key;
+      }
+    }
+    
+    if (oldestKey) {
+      scanCache.delete(oldestKey);
+    }
+  }
+  
   scanCache.set(messageId, { result, timestamp: Date.now() });
 }
 
@@ -75,4 +98,16 @@ export function setCachedScan(messageId, result) {
  */
 export function clearScanCache() {
   scanCache.clear();
+}
+
+/**
+ * Get cache statistics (for debugging)
+ * @returns {object}
+ */
+export function getCacheStats() {
+  return {
+    size: scanCache.size,
+    maxSize: MAX_CACHE_SIZE,
+    ttlMinutes: CACHE_TTL / 60000
+  };
 }

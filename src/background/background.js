@@ -17,6 +17,9 @@ let currentState = {
 
 let lastDisplayedMessage = null;
 
+// Track current scan to cancel outdated requests
+let currentScanId = 0;
+
 /**
  * Save state to storage
  */
@@ -41,10 +44,16 @@ async function getMessageData(messageId) {
  * Scan message
  */
 async function scanMessage(messageId, force = false) {
+  // Increment scan ID to invalidate any in-flight requests
+  const thisScanId = ++currentScanId;
+  
   // Check cache first
   if (!force) {
     const cached = getCachedScan(String(messageId));
     if (cached) {
+      // Verify this is still the current scan before updating state
+      if (thisScanId !== currentScanId) return;
+      
       const data = await getMessageData(messageId);
       const parsed = parseThunderbirdMessage(data);
       currentState = { state: 'success', messageId, parsedMessage: parsed, result: cached, error: null };
@@ -53,19 +62,35 @@ async function scanMessage(messageId, force = false) {
     }
   }
   
-  // Set loading
+  // Set loading state with current messageId
   currentState = { state: 'loading', messageId, parsedMessage: null, result: null, error: null };
   await saveState();
   
   try {
     const data = await getMessageData(messageId);
+    
+    // Check if this scan is still current before continuing
+    if (thisScanId !== currentScanId) {
+      return; // A newer scan has been initiated, abort this one
+    }
+    
     const parsed = parseThunderbirdMessage(data);
     const result = await scanWithLlm(parsed);
+    
+    // Check again after LLM call - this is the critical check
+    if (thisScanId !== currentScanId) {
+      return; // A newer scan has been initiated, discard this result
+    }
     
     setCachedScan(String(messageId), result);
     currentState = { state: 'success', messageId, parsedMessage: parsed, result, error: null };
     await saveState();
   } catch (err) {
+    // Only update error state if this is still the current scan
+    if (thisScanId !== currentScanId) {
+      return;
+    }
+    
     console.error('PhishGuard: Scan error:', err);
     currentState = { state: 'error', messageId, parsedMessage: null, result: null, error: err.message || String(err) };
     await saveState();

@@ -130,6 +130,7 @@
   let detailsOpen = false;
   let hasResult = false;
   let autoScanEnabled = true;
+  let currentMessageId = null; // Track the current email's messageId
 
   // Load auto-scan preference
   async function loadAutoScanPreference() {
@@ -142,6 +143,20 @@
     } catch (e) {
       console.error('PhishGuard: Failed to load auto-scan preference:', e);
     }
+  }
+
+  // Get current message ID from background script
+  async function getCurrentMessageId() {
+    try {
+      const response = await browser.runtime.sendMessage({ action: 'getCurrentMessage' });
+      if (response && response.messageId) {
+        currentMessageId = response.messageId;
+        return response.messageId;
+      }
+    } catch (e) {
+      // Silently ignore
+    }
+    return null;
   }
 
   // Event listeners
@@ -243,12 +258,27 @@
 
   function showResult(result, parsed) {
     hasResult = true;
-    const isBad = result.verdict === 'malicious';
+    const verdict = result.verdict;
+    const isMalicious = verdict === 'malicious';
+    const isSuspicious = verdict === 'suspicious';
+    const isLegitimate = verdict === 'legitimate';
     
-    badgeEl.textContent = isBad ? '⚠️ MALICIOUS' : '✅ SAFE';
-    badgeEl.className = 'pg-badge ' + (isBad ? 'danger' : 'safe');
+    // Set badge text and styling based on verdict
+    if (isMalicious) {
+      badgeEl.textContent = '⚠️ MALICIOUS';
+      badgeEl.className = 'pg-badge danger';
+      confEl.style.color = '#dc2626';
+    } else if (isSuspicious) {
+      badgeEl.textContent = '⚡ SUSPICIOUS';
+      badgeEl.className = 'pg-badge warning';
+      confEl.style.color = '#d97706';
+    } else {
+      badgeEl.textContent = '✅ SAFE';
+      badgeEl.className = 'pg-badge safe';
+      confEl.style.color = '#059669';
+    }
+    
     confEl.textContent = result.confidence + '%';
-    confEl.style.color = isBad ? '#dc2626' : '#059669';
 
     const auth = parsed?.authentication || {};
     setAuth('pgSpf', auth.spf?.status);
@@ -307,6 +337,16 @@
     if (state.timestamp && state.timestamp <= lastTs) return;
     lastTs = state.timestamp || Date.now();
 
+    // Validate that the result is for the current email
+    // Only show results if messageId matches (or we don't have a currentMessageId yet)
+    if (currentMessageId && state.messageId && state.messageId !== currentMessageId) {
+      // Result is for a different email, ignore it
+      // Keep showing loading state for the current email
+      if (state.state === 'success' || state.state === 'error') {
+        return; // Don't update UI with stale results
+      }
+    }
+
     if (state.state === 'success' && state.result) {
       showResult(state.result, state.parsedMessage);
     } else if (state.state === 'error') {
@@ -325,6 +365,9 @@
 
   async function poll() {
     try {
+      // Periodically refresh currentMessageId in case the displayed email changed
+      await getCurrentMessageId();
+      
       const d = await browser.storage.local.get('phishguardState');
       if (d?.phishguardState) process(d.phishguardState);
     } catch (e) {
@@ -337,7 +380,10 @@
     try {
       const response = await browser.runtime.sendMessage({ action: 'scanCurrentMessage' });
       
-      if (response && response.status === 'no_message') {
+      if (response && response.status === 'scanning' && response.messageId) {
+        // Update currentMessageId to match the scan being performed
+        currentMessageId = response.messageId;
+      } else if (response && response.status === 'no_message') {
         // Background has no message yet. Will retry when polling detects a change.
         setTimeout(() => {
           requestScan();
@@ -352,6 +398,9 @@
   async function initialize() {
     // Load auto-scan preference first
     await loadAutoScanPreference();
+    
+    // Get current message ID
+    await getCurrentMessageId();
     
     if (autoScanEnabled) {
       showLoading();

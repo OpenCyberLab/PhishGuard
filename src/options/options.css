@@ -43,9 +43,21 @@ header {
     border-bottom: 2px solid var(--border-color);
 }
 
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-logo {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
 header h1 {
     font-size: 28px;
-    margin-bottom: 8px;
+    margin-bottom: 0;
     color: var(--accent-primary);
 }
 

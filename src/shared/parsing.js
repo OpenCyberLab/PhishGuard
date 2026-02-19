@@ -246,6 +246,8 @@ export function extractMetadata(headers) {
 
 /**
  * Calculate authentication risk score
+ * NOTE: Only explicit FAILURES add to risk score. Missing authentication (none/unknown)
+ * is treated as neutral since many legitimate senders don't configure DKIM/DMARC.
  * @param {object} auth - Authentication results from extractAuthenticationResults
  * @returns {object} - Risk assessment
  */
@@ -253,38 +255,32 @@ export function calculateAuthRisk(auth) {
   let riskScore = 0;
   const issues = [];
   
-  // SPF checks
+  // SPF checks - only failures are concerning
   if (auth.spf.status === 'fail') {
     riskScore += 40;
     issues.push('SPF authentication failed - sender IP not authorized');
   } else if (auth.spf.status === 'softfail') {
     riskScore += 20;
     issues.push('SPF soft fail - sender IP may not be authorized');
-  } else if (auth.spf.status === 'none' || auth.spf.status === 'unknown') {
-    riskScore += 10;
-    issues.push('No SPF record found for sender domain');
   }
+  // Note: 'none' and 'unknown' are neutral - no risk added
   
-  // DKIM checks
+  // DKIM checks - only failures are concerning
   if (auth.dkim.status === 'fail') {
     riskScore += 35;
     issues.push('DKIM signature verification failed - message may be tampered');
-  } else if (auth.dkim.status === 'none' || auth.dkim.status === 'unknown') {
-    riskScore += 10;
-    issues.push('No DKIM signature present');
   }
+  // Note: 'none' and 'unknown' are neutral - many legitimate emails are unsigned
   
-  // DMARC checks
+  // DMARC checks - only failures are concerning
   if (auth.dmarc.status === 'fail') {
     riskScore += 45;
     issues.push('DMARC policy check failed - high spoofing risk');
-  } else if (auth.dmarc.status === 'none' || auth.dmarc.status === 'unknown') {
-    riskScore += 5;
-    issues.push('No DMARC policy for sender domain');
   }
+  // Note: 'none' and 'unknown' are neutral - most domains don't have DMARC
   
   // Determine overall authentication status
-  let overallStatus = 'unknown';
+  let overallStatus = 'neutral';
   if (auth.spf.status === 'pass' && auth.dkim.status === 'pass' && auth.dmarc.status === 'pass') {
     overallStatus = 'pass';
   } else if (auth.spf.status === 'fail' || auth.dkim.status === 'fail' || auth.dmarc.status === 'fail') {
@@ -297,9 +293,9 @@ export function calculateAuthRisk(auth) {
     score: Math.min(riskScore, 100),
     status: overallStatus,
     issues,
-    summary: riskScore === 0 ? 'All authentication checks passed' :
-             riskScore < 20 ? 'Minor authentication concerns' :
-             riskScore < 50 ? 'Authentication issues detected' :
+    summary: riskScore === 0 ? 'No authentication failures detected' :
+             riskScore < 30 ? 'Minor authentication concern' :
+             riskScore < 60 ? 'Authentication issue detected' :
              'Significant authentication failures'
   };
 }

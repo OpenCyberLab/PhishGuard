@@ -83,7 +83,7 @@ function setupEventListeners() {
     
     // Open documentation
     document.getElementById('openDocsBtn').addEventListener('click', () => {
-        window.open('../../README.md', '_blank');
+        browser.tabs.create({ url: '/src/docs/documentation.html' });
     });
 }
 

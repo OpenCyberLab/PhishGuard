@@ -2,9 +2,9 @@
   "manifest_version": 2,
   "name": "PhishGuard",
   "description": "AI-powered email phishing detection using a private, local LLM. No data leaves your device.",
-  "version": "1.0.1",
+  "version": "1.0.6",
   "author": "PhishGuard Team",
-  "homepage_url": "https://github.com/OpenCyberLab/PhishGuard",
+  "homepage_url": "https://addons.thunderbird.net/en-US/thunderbird/addon/phishguard/",
 
   "browser_specific_settings": {
     "gecko": {
@@ -22,10 +22,8 @@
 
   "permissions": [
     "messagesRead",
-    "accountsRead", 
+    "accountsRead",
     "storage",
-    "tabs",
-    "activeTab",
     "http://localhost/*",
     "https://localhost/*",
     "messagesModify"

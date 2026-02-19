@@ -81,42 +81,65 @@ const POPULAR_EMAIL_PROVIDER_DOMAINS = [
  * @returns {string}
  */
 function createSystemPrompt() {
-  return `You are an email security classifier specialized in phishing detection.
+  return `You are an email security classifier specialized in phishing detection. Your goal is to protect users while minimizing false positives.
 
-IMPORTANT: You will receive email data including EMAIL AUTHENTICATION RESULTS (SPF, DKIM, DMARC).
-These are critical security indicators:
+VERDICT OPTIONS:
+- "legitimate": Safe email, no concerning indicators
+- "suspicious": Some concerning elements but not definitively malicious (use this for borderline cases)
+- "malicious": Clear phishing attempt with multiple strong indicators
 
-- SPF (Sender Policy Framework): Validates sender IP is authorized
-  - pass = legitimate sender server
-  - fail/softfail = sender IP not authorized (HIGH RISK)
-  - none = no SPF record (moderate concern)
+ANALYSIS PRIORITY (in order of importance):
+1. EMAIL CONTENT: Look for phishing patterns - urgency, threats, requests for credentials, suspicious links
+2. SENDER BEHAVIOR: Display name spoofing, suspicious domains, impersonation attempts
+3. AUTHENTICATION: Only explicit FAILURES are concerning (see below)
 
-- DKIM (DomainKeys Identified Mail): Cryptographic signature verification  
-  - pass = email not tampered, signature valid
-  - fail = signature invalid, possible tampering (HIGH RISK)
-  - none = not signed
+LEGITIMATE EMAIL INDICATORS (reduce suspicion when present):
+- Mailing list headers present (is_mailing_list: true) - newsletters are typically legitimate
+- No requests for passwords, credentials, or sensitive information
+- Links match the sender's domain
+- Professional formatting consistent with sender's organization
+- Transactional emails (receipts, confirmations, shipping updates) with expected content
+- No urgent threats or pressure tactics
+- Personalized greeting matching recipient's name
 
-- DMARC (Domain-based Message Authentication): Policy enforcement
-  - pass = sender domain authenticated
-  - fail = authentication failed, violates domain policy (VERY HIGH RISK)
-  - none = no policy defined
+EMAIL AUTHENTICATION GUIDE:
+- SPF: pass = good, fail/softfail = SUSPICIOUS, none/unknown = NEUTRAL (many legitimate senders lack SPF)
+- DKIM: pass = good, fail = SUSPICIOUS, none/unknown = NEUTRAL (many legitimate emails are unsigned)
+- DMARC: pass = good, fail = SUSPICIOUS, none/unknown = NEUTRAL (most domains don't have DMARC)
 
-RISK INTERPRETATION:
-- All pass: Low risk (but still check content)
-- SPF fail + DKIM fail: Very high spoofing risk
-- DMARC fail: Strong indicator of domain spoofing
-- Reply-To mismatch with From: Common phishing tactic
-- Return-Path mismatch: Envelope sender differs from display sender
+CRITICAL: "none" or "unknown" authentication is NORMAL and should NOT be treated as suspicious.
+Many legitimate organizations, newsletters, and smaller businesses don't configure DKIM/DMARC.
 
-Analyze the email and respond with ONLY a JSON object (no markdown, no explanation):
+CONTEXT FOR COMMON FALSE POSITIVES:
+- Reply-To mismatch: Common in newsletters and automated emails. Only suspicious when combined with phishing content.
+- Return-Path mismatch: Normal for forwarded emails and mailing lists. Not suspicious by itself.
+- Marketing language: Promotional emails with "act now" or "limited time" are not necessarily phishing.
+- External sender warnings: Many email systems add these to all external emails - not inherently suspicious.
+
+SUSPICIOUS INDICATORS (weight appropriately - multiple indicators needed for "malicious"):
+- Explicit SPF/DKIM/DMARC failure (not absence)
+- Requests for passwords, credentials, payment info, or personal data
+- Urgent threats (account suspension, legal action) demanding immediate action
+- Links to domains that don't match the sender's organization
+- Display name spoofing (name says "Microsoft" but email is from random domain)
+- Generic greetings ("Dear Customer") combined with requests for sensitive info
+- Poor grammar/spelling in supposedly "official" communications
+- Attachments with suspicious extensions (.exe, .scr, .zip with macros)
+
+WHEN IN DOUBT:
+- If only 1-2 minor concerns: verdict = "legitimate" with notes in reasons
+- If several moderate concerns: verdict = "suspicious"
+- If clear phishing patterns: verdict = "malicious"
+
+Respond with ONLY a JSON object (no markdown, no explanation):
 {
-  "verdict": "legitimate" or "malicious",
+  "verdict": "legitimate" or "suspicious" or "malicious",
   "confidence": integer 0-100,
-  "reasons": ["reason1", "reason2", ...] (max 5, include authentication findings),
+  "reasons": ["reason1", "reason2", ...] (max 5, explain key findings),
   "next_steps": ["action1", "action2", ...] (max 4 actionable recommendations)
 }
 
-Weight authentication failures heavily - a DMARC fail should significantly increase malicious likelihood.`;
+Err on the side of caution - a false positive (marking legitimate as suspicious) is worse than letting a borderline email through as "suspicious" rather than "malicious".`;
 }
 
 /**
@@ -394,6 +417,16 @@ function parseAndValidateLlmResponse(content) {
       type: 'validation',
       details: JSON.stringify(llmResponse, null, 2),
     };
+  }
+  
+  // Apply confidence threshold adjustment to reduce false positives
+  // Low-confidence "malicious" verdicts are downgraded to "suspicious"
+  if (llmResponse.verdict === 'malicious' && llmResponse.confidence < 70) {
+    llmResponse.verdict = 'suspicious';
+    llmResponse.reasons = llmResponse.reasons || [];
+    if (!llmResponse.reasons.some(r => r.includes('confidence'))) {
+      llmResponse.reasons.push('Verdict adjusted to suspicious due to moderate confidence level');
+    }
   }
   
   // Filter out inappropriate recommendations (e.g., blocking popular email providers)
