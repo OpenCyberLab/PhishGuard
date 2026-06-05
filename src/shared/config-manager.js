@@ -43,6 +43,7 @@ function getDefaultSettings() {
     port: 1234,
     selectedModel: 'local-model',
     apiFormat: 'openai',
+    requestTimeout: 180,
     lastChecked: null,
     validated: false
   };

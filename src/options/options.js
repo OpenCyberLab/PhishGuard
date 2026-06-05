@@ -20,6 +20,7 @@ let serverTypeSelect;
 let apiUrlInput;
 let selectedModelInput;
 let apiFormatSelect;
+let requestTimeoutInput;
 let testResultDiv;
 let modelListDiv;
 let statusMessage;
@@ -33,6 +34,7 @@ async function init() {
     apiUrlInput = document.getElementById('apiUrl');
     selectedModelInput = document.getElementById('selectedModel');
     apiFormatSelect = document.getElementById('apiFormat');
+    requestTimeoutInput = document.getElementById('requestTimeout');
     testResultDiv = document.getElementById('testResult');
     modelListDiv = document.getElementById('modelList');
     statusMessage = document.getElementById('statusMessage');
@@ -54,6 +56,7 @@ async function loadSettings() {
     apiUrlInput.value = settings.apiUrl || 'http://localhost:1234';
     selectedModelInput.value = settings.selectedModel || '';
     apiFormatSelect.value = settings.apiFormat || 'openai';
+    requestTimeoutInput.value = settings.requestTimeout || 180;
 }
 
 /**
@@ -123,7 +126,8 @@ async function handleTestConnection() {
             apiUrl: apiUrlInput.value,
             selectedModel: selectedModelInput.value,
             apiFormat: apiFormatSelect.value,
-            port: parseInt(apiUrlInput.value.split(':').pop()) || 1234
+            port: parseInt(apiUrlInput.value.split(':').pop()) || 1234,
+            requestTimeout: Math.min(Math.max(parseInt(requestTimeoutInput.value) || 30, 5), 300)
         };
         
         await saveLlmSettings(tempSettings);
@@ -166,7 +170,8 @@ async function handleListModels() {
             serverType: serverTypeSelect.value,
             apiUrl: apiUrlInput.value,
             apiFormat: apiFormatSelect.value,
-            port: parseInt(apiUrlInput.value.split(':').pop()) || 1234
+            port: parseInt(apiUrlInput.value.split(':').pop()) || 1234,
+            requestTimeout: Math.min(Math.max(parseInt(requestTimeoutInput.value) || 30, 5), 300)
         };
         
         await saveLlmSettings(tempSettings);
@@ -236,14 +241,15 @@ async function handleSaveSettings() {
     saveBtn.disabled = true;
     
     try {
-        const settings = {
+const settings = {
             serverType: serverTypeSelect.value,
             apiUrl: apiUrlInput.value,
             selectedModel: selectedModelInput.value,
             apiFormat: apiFormatSelect.value,
             port: parseInt(apiUrlInput.value.split(':').pop()) || 1234,
+            requestTimeout: Math.min(Math.max(parseInt(requestTimeoutInput.value) || 30, 5), 300),
             lastChecked: new Date().toISOString(),
-            validated: false // Will be validated on next use
+            validated: false
         };
         
         const success = await saveLlmSettings(settings);
@@ -271,6 +277,7 @@ async function handleReset() {
         serverTypeSelect.value = 'lm_studio';
         handleServerTypeChange();
         selectedModelInput.value = '';
+        requestTimeoutInput.value = 180;
         showStatusMessage('Settings reset to defaults. Click Save to apply.', 'success');
     }
 }
