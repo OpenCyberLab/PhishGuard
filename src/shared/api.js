@@ -6,7 +6,7 @@
 import { isValidLlmResponse } from './state.js';
 import { getLlmSettings } from './config-manager.js';
 
-const REQUEST_TIMEOUT = 30000; // 30 seconds
+const DEFAULT_REQUEST_TIMEOUT_SECONDS = 180;
 
 /**
  * List of popular email service provider domains that should never be recommended for blocking.
@@ -213,7 +213,8 @@ function prepareMessageForAnalysis(message) {
  */
 async function scanWithOpenAI(message, settings) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+  const timeoutMs = (settings.requestTimeout || DEFAULT_REQUEST_TIMEOUT_SECONDS) * 1000;
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   
   try {
     const apiUrl = `${settings.apiUrl}/v1/chat/completions`;
@@ -287,7 +288,8 @@ async function scanWithOpenAI(message, settings) {
  */
 async function scanWithOllama(message, settings) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+  const timeoutMs = (settings.requestTimeout || DEFAULT_REQUEST_TIMEOUT_SECONDS) * 1000;
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   
   try {
     const apiUrl = `${settings.apiUrl}/api/generate`;
@@ -444,9 +446,9 @@ function parseAndValidateLlmResponse(content) {
  * @returns {Promise<object>} - LLM response with verdict, confidence, reasons, next_steps
  */
 export async function scanWithLlm(message) {
+  let settings;
   try {
-    // Load settings
-    const settings = await getLlmSettings();
+    settings = await getLlmSettings();
     
     // Route to appropriate API
     let result;
@@ -466,8 +468,9 @@ export async function scanWithLlm(message) {
     }
     
     if (error.name === 'AbortError') {
+      const timeoutSeconds = settings?.requestTimeout || DEFAULT_REQUEST_TIMEOUT_SECONDS;
       throw {
-        message: 'Request timed out after 30 seconds',
+        message: `Request timed out after ${timeoutSeconds} seconds`,
         type: 'timeout',
       };
     }

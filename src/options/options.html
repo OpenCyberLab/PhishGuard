@@ -80,6 +80,12 @@
                     </select>
                     <small class="form-text">API format used by your server</small>
                 </div>
+
+                <div class="form-group">
+                    <label for="requestTimeout">Request Timeout (seconds)</label>
+                    <input type="number" id="requestTimeout" class="form-control" min="5" max="300" value="180" placeholder="180">
+                    <small class="form-text">Time to wait for the LLM response before timing out (5-300 seconds). Increase for slower models.</small>
+                </div>
             </section>
 
             <section class="settings-section">
