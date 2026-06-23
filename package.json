@@ -13,8 +13,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AjiteshShukla/PhishGuard"
+    "url": "https://github.com/OpenCyberLab/PhishGuard"
   },
-  "author": "PhishGuard Team",
+  "author": "OpenCyberLab",
   "license": "MIT"
 }
