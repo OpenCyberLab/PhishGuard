@@ -1,6 +1,6 @@
 {
   "name": "thunderbird-phishguard",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Thunderbird extension for AI-powered email phishing detection using a private, local LLM",
   "private": true,
   "scripts": {

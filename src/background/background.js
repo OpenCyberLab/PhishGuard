@@ -166,44 +166,51 @@ if (messenger.messageDisplayAction && messenger.messageDisplayAction.onClicked) 
 }
 
 // Handle messages
-messenger.runtime.onMessage.addListener(async (message) => {
+messenger.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'getState') {
-    return currentState;
+    sendResponse(currentState);
+    return false;
   }
   if (message.action === 'testConnection') {
-    return await testLlmConnection();
+    testLlmConnection().then(result => sendResponse(result));
+    return true;
   }
   if (message.action === 'openSettings') {
     messenger.runtime.openOptionsPage();
-    return { status: 'opened' };
+    sendResponse({ status: 'opened' });
+    return false;
   }
   if (message.action === 'scanCurrentMessage') {
     if (lastDisplayedMessage) {
       scanMessage(lastDisplayedMessage.id, true);
-      return { status: 'scanning', messageId: lastDisplayedMessage.id };
+      sendResponse({ status: 'scanning', messageId: lastDisplayedMessage.id });
     } else {
-      return { status: 'no_message' };
+      sendResponse({ status: 'no_message' });
     }
+    return false;
   }
   if (message.action === 'scanMessage' && message.messageId) {
-    try {
-      const msg = await messenger.messages.get(message.messageId);
+    messenger.messages.get(message.messageId).then(msg => {
       lastDisplayedMessage = msg;
       scanMessage(message.messageId, true);
-      return { status: 'scanning', messageId: message.messageId };
-    } catch (err) {
+      sendResponse({ status: 'scanning', messageId: message.messageId });
+    }).catch(err => {
       console.error('PhishGuard: Failed to get message:', err);
-      return { status: 'error', error: err.message };
-    }
+      sendResponse({ status: 'error', error: err.message });
+    });
+    return true;
   }
   if (message.action === 'getCurrentMessage' && lastDisplayedMessage) {
-    return { messageId: lastDisplayedMessage.id, subject: lastDisplayedMessage.subject, author: lastDisplayedMessage.author };
+    sendResponse({ messageId: lastDisplayedMessage.id, subject: lastDisplayedMessage.subject, author: lastDisplayedMessage.author });
+    return false;
   }
   if (message.action === 'getFullMessage' && message.messageId) {
-    return await getMessageData(message.messageId);
+    getMessageData(message.messageId).then(data => sendResponse(data));
+    return true;
   }
   
-  return null;
+  sendResponse(null);
+  return false;
 });
 
 // Save initial state
